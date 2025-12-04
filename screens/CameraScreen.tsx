@@ -1,115 +1,96 @@
-import React, { useState } from "react";
-import { View, Text, TouchableOpacity, Image, StyleSheet, Alert } from "react-native";
+import React, { useState, useRef } from "react";
+import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, Alert, Button } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import { CameraView, useCameraPermissions } from "expo-camera"; 
+
+// --- CONFIGURACIÓN DE TU API ---
+// ¡¡CAMBIA ESTOS NÚMEROS POR TU IP DE IPCONFIG!!
+const API_URL = "http://192.168.100.9:3000/elementos"; 
 
 export default function CameraScreen() {
   const navigation = useNavigation<any>();
-  const [cameraType, setCameraType] = useState<"back" | "front">("back");
-  const [photoUri, setPhotoUri] = useState<string | null>(null);
+  const [permission, requestPermission] = useCameraPermissions();
+  const [guardando, setGuardando] = useState(false);
+  const cameraRef = useRef<CameraView>(null);
 
-  let ImagePicker: any = null;
-  try {
-    ImagePicker = require("expo-image-picker");
-  } catch (e) {
-    ImagePicker = null;
+  if (!permission) return <View />;
+  if (!permission.granted) {
+    return (
+      <View style={styles.container}>
+        <Text style={{color:'white', textAlign:'center', marginBottom:20}}>Falta permiso</Text>
+        <Button title="Dar Permiso" onPress={requestPermission} />
+      </View>
+    );
   }
 
-  const requestPermission = async () => {
-    if (!ImagePicker) return false;
-    try {
-      const { status } = await ImagePicker.requestCameraPermissionsAsync();
-      return status === "granted";
-    } catch (e) {
-      console.warn("Error pidiendo permiso:", e);
-      return false;
-    }
-  };
+  const tomarFoto = async () => {
+    if (cameraRef.current && !guardando) {
+      try {
+        setGuardando(true);
+        
+        // 1. TOMAR FOTO (Configuración estándar segura)
+        const photo = await cameraRef.current.takePictureAsync({
+          quality: 0.5,
+          base64: false,
+          skipProcessing: false // Lo dejamos en false para asegurar compatibilidad
+        });
 
-  const openCamera = async () => {
-    if (!ImagePicker) {
-      Alert.alert("Nota", "expo-image-picker no está instalado — usando imagen de ejemplo.");
-      setPhotoUri("https://placekitten.com/800/600");
-      return;
-    }
+        if (!photo?.uri) throw new Error("Error de cámara");
 
-    const ok = await requestPermission();
-    if (!ok) {
-      Alert.alert("Permiso denegado", "No se pueden tomar fotos sin permiso de cámara.");
-      return;
-    }
+        // 2. ENVIAR A TU SERVIDOR JSON
+        const nuevoElemento = {
+          titulo: `Foto ${new Date().toLocaleTimeString()}`,
+          descripcion: "Enviado desde el celular",
+          imagen: photo.uri, 
+          precio: 0,
+          fecha: new Date().toISOString()
+        };
 
-    try {
-      const result = await ImagePicker.launchCameraAsync({
-        quality: 0.7,
-        allowsEditing: false,
-        cameraType: cameraType,
-      });
+        const respuesta = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(nuevoElemento)
+        });
 
-      if (!result.canceled && result.assets && result.assets.length > 0) {
-        const uri = result.assets[0].uri;
-        setPhotoUri(uri);
+        if (!respuesta.ok) throw new Error("Error conectando al servidor");
+
+        // 3. ÉXITO
+        Alert.alert("¡Guardado!", "Se subió a db.json");
+        navigation.navigate("Products");
+
+      } catch (e: any) {
+        console.error(e);
+        Alert.alert("Error", "Revisa tu IP y que json-server esté corriendo.");
+      } finally {
+        setGuardando(false);
       }
-    } catch (e) {
-      console.warn("Error al abrir cámara:", e);
-      Alert.alert("Error", "No se pudo abrir la cámara.");
     }
   };
-
-  const toggleCamera = () => setCameraType((p) => (p === "back" ? "front" : "back"));
 
   return (
-    <View style={styles.root}>
-      <View style={styles.body}>
-        <Text style={styles.title}>Cámara</Text>
-
-        {photoUri ? (
-          <Image source={{ uri: photoUri }} style={styles.preview} />
-        ) : (
-          <Text style={styles.placeholder}>No hay foto todavía</Text>
+    <View style={styles.container}>
+      <CameraView style={styles.camera} facing="back" mode="picture" ref={cameraRef}>
+        {guardando && (
+            <View style={styles.loader}>
+                <ActivityIndicator size="large" color="#fff" />
+                <Text style={{color:'white'}}>Guardando...</Text>
+            </View>
         )}
-
-        <TouchableOpacity style={styles.smallButton} onPress={toggleCamera}>
-          <Text style={styles.smallButtonText}>{cameraType === "back" ? "Usar Trasera" : "Usar Frontal"}</Text>
-        </TouchableOpacity>
-        <View style={{ height: 8 }} />
-        <TouchableOpacity style={styles.primaryButton} onPress={openCamera}>
-          <Text style={styles.buttonText}>Abrir Cámara</Text>
-        </TouchableOpacity>
-      </View>
-
-      <View style={styles.footer}>
-        <TouchableOpacity style={styles.secondaryButton} onPress={() => navigation.navigate("Products") }>
-          <Text style={styles.buttonText}>Abrir Galería</Text>
-        </TouchableOpacity>
-        <View style={{ height: 8 }} />
-        <TouchableOpacity style={styles.secondaryButton} onPress={() => navigation.navigate("Home") }>
-          <Text style={styles.buttonText}>Volver al Inicio</Text>
-        </TouchableOpacity>
-        {photoUri && (
-          <>
-            <View style={{ height: 8 }} />
-            <TouchableOpacity style={styles.ghostButton} onPress={() => setPhotoUri(null)}>
-              <Text style={{ color: "#0B6E4F" }}>Tomar otra</Text>
-            </TouchableOpacity>
-          </>
-        )}
-      </View>
+        <View style={styles.controls}>
+          <TouchableOpacity onPress={() => navigation.goBack()}><Text style={styles.btnTxt}>Cancelar</Text></TouchableOpacity>
+          <TouchableOpacity onPress={tomarFoto} style={styles.captureBtn} disabled={guardando} />
+          <View style={{width:60}}/>
+        </View>
+      </CameraView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: "#FFFFFF" },
-  body: { flex: 1, justifyContent: "center", alignItems: "center", padding: 18 },
-  title: { fontSize: 22, fontWeight: "800", marginBottom: 12, color: "#0B6E4F" },
-  preview: { width: "90%", height: 320, marginBottom: 12, borderRadius: 12, backgroundColor: "#f3f3f3" },
-  placeholder: { color: "#8E8E93", marginBottom: 12 },
-  smallButton: { backgroundColor: "#FFD27F", paddingVertical: 10, paddingHorizontal: 14, borderRadius: 10 },
-  smallButtonText: { color: "#6C3A00", fontWeight: "700" },
-  primaryButton: { marginTop: 8, backgroundColor: "#1E9E6E", padding: 12, borderRadius: 12, alignItems: "center" },
-  secondaryButton: { marginTop: 8, backgroundColor: "#6C7A89", padding: 12, borderRadius: 12, alignItems: "center" },
-  buttonText: { color: "white", fontWeight: "700" },
-  ghostButton: { padding: 10, borderRadius: 10, backgroundColor: "#E6F4EA", alignItems: "center" },
-  footer: { padding: 12, backgroundColor: "#FBFBFB" },
+  container: { flex: 1, backgroundColor: 'black' },
+  camera: { flex: 1 },
+  loader: { ...StyleSheet.absoluteFillObject, backgroundColor:'rgba(0,0,0,0.5)', justifyContent:'center', alignItems:'center', zIndex:10 },
+  controls: { flex: 1, flexDirection: 'row', justifyContent: 'space-around', alignItems: 'flex-end', marginBottom: 40 },
+  btnTxt: { color: 'white', fontSize: 18, marginBottom: 20 },
+  captureBtn: { width: 70, height: 70, borderRadius: 35, backgroundColor: 'white', borderWidth: 5, borderColor: '#ccc' }
 });
-

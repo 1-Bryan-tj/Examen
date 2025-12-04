@@ -1,50 +1,66 @@
-import React from "react";
-import { View, Text, FlatList, Image, TouchableOpacity, StyleSheet } from "react-native";
-import { useNavigation } from "@react-navigation/native";
+import React, { useState, useCallback } from "react";
+import { View, Text, FlatList, Image, TouchableOpacity, StyleSheet, ActivityIndicator } from "react-native";
+import { useNavigation, useFocusEffect } from "@react-navigation/native";
 
-const IMAGES = [
-  { id: "1", source: require("../assets/galeria imagen 1.jpg") },
-  { id: "2", source: require("../assets/galeria imagen 2.jpg") },
-  { id: "3", source: require("../assets/galeria imagen 3.jpg") },
-  { id: "4", source: require("../assets/galeria imagen 4.jpg") },
-];
+// --- TU API ---
+const API_URL = "http://192.168.100.9:3000/elementos"; // <--- PON TU IP AQUÍ
 
 export default function ProductsScreen() {
   const navigation = useNavigation<any>();
+  const [misDatos, setMisDatos] = useState<any[]>([]);
+  const [cargando, setCargando] = useState(true);
+
+  useFocusEffect(
+    useCallback(() => {
+      const cargarDatos = async () => {
+        try {
+          const respuesta = await fetch(API_URL);
+          const datos = await respuesta.json();
+          setMisDatos(datos.reverse()); 
+        } catch (e) {
+          console.error(e);
+        } finally {
+          setCargando(false);
+        }
+      };
+      cargarDatos();
+    }, [])
+  );
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Galería</Text>
+      <Text style={styles.title}>Galería API</Text>
+      
+      {cargando ? (
+        <ActivityIndicator size="large" color="#1E9E6E" />
+      ) : (
+        <FlatList
+          data={misDatos}
+          keyExtractor={(item) => item.id.toString()}
+          numColumns={2}
+          contentContainerStyle={{paddingBottom: 80}}
+          renderItem={({ item }) => (
+            <View style={styles.card}>
+              <Image source={{ uri: item.imagen }} style={styles.image} />
+              <Text style={styles.cardTitle}>{item.titulo}</Text>
+            </View>
+          )}
+          ListEmptyComponent={<Text style={{textAlign:'center', marginTop:20}}>No hay fotos.</Text>}
+        />
+      )}
 
-      <FlatList
-        data={IMAGES}
-        keyExtractor={(item) => item.id}
-        numColumns={2}
-        contentContainerStyle={{ paddingBottom: 16 }}
-        renderItem={({ item }) => (
-          <View style={styles.card}>
-            <Image source={item.source} style={styles.image} />
-          </View>
-        )}
-      />
-
-      <TouchableOpacity style={styles.primaryButton} onPress={() => navigation.navigate("Camera")}>
-        <Text style={styles.buttonText}>Abrir Cámara</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity style={styles.secondaryButton} onPress={() => navigation.navigate("Home")}>
-        <Text style={styles.buttonText}>Volver al Inicio</Text>
+      <TouchableOpacity style={styles.fab} onPress={() => navigation.navigate("Camera")}>
+        <Text style={{fontSize: 30}}>📷</Text>
       </TouchableOpacity>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#FFFDF7", padding: 14 },
-  title: { fontSize: 24, fontWeight: "800", color: "#8A4B00", marginBottom: 12, alignSelf: "center" },
-  card: { flex: 1, padding: 8 },
-  image: { width: "100%", height: 140, borderRadius: 12, backgroundColor: "#eee" },
-  primaryButton: { marginTop: 12, backgroundColor: "#FF8C42", padding: 14, borderRadius: 12, alignItems: "center" },
-  secondaryButton: { marginTop: 8, backgroundColor: "#6C7A89", padding: 12, borderRadius: 12, alignItems: "center" },
-  buttonText: { color: "white", fontWeight: "700" },
+  container: { flex: 1, backgroundColor: "#f5f5f5", padding: 10, paddingTop: 40 },
+  title: { fontSize: 24, fontWeight: "bold", textAlign: 'center', marginBottom: 15, color: '#333' },
+  card: { flex: 1, margin: 5, backgroundColor: 'white', borderRadius: 10, padding: 5, elevation: 2 },
+  image: { width: "100%", height: 150, borderRadius: 8, backgroundColor: "#eee" },
+  cardTitle: { fontSize: 12, textAlign: 'center', marginTop: 5 },
+  fab: { position: 'absolute', bottom: 30, right: 30, width: 70, height: 70, borderRadius: 35, backgroundColor: '#1E9E6E', justifyContent: 'center', alignItems: 'center', elevation: 8 }
 });

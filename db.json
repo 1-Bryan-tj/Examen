@@ -1,0 +1,27 @@
+{
+  "elementos": [
+    {
+      "id": "1",
+      "titulo": "Foto de Ejemplo",
+      "descripcion": "Esta viene por defecto",
+      "imagen": "https://via.placeholder.com/150",
+      "fecha": "2024-01-01"
+    },
+    {
+      "id": "aa0b",
+      "titulo": "Foto 3:00:06 p.m.",
+      "descripcion": "Enviado desde el celular",
+      "imagen": "file:///data/user/0/host.exp.exponent/cache/Camera/dbe47395-e44e-4e66-9e40-fe3d552ac0b0.jpg",
+      "precio": 0,
+      "fecha": "2025-12-04T21:00:06.659Z"
+    },
+    {
+      "id": "8bf2",
+      "titulo": "Foto 3:00:11 p.m.",
+      "descripcion": "Enviado desde el celular",
+      "imagen": "file:///data/user/0/host.exp.exponent/cache/Camera/285168a5-434f-41a4-aaae-6ae839368452.jpg",
+      "precio": 0,
+      "fecha": "2025-12-04T21:00:11.562Z"
+    }
+  ]
+}
