@@ -27,7 +27,7 @@ export default function LoginScreen() {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Examen Final</Text>
-      <Text style={styles.subtitle}>Modo API Local</Text>
+      <Text style={styles.subtitle}></Text>
 
       <TextInput
         style={styles.input}

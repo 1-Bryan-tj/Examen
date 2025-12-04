@@ -22,6 +22,14 @@
       "imagen": "file:///data/user/0/host.exp.exponent/cache/Camera/285168a5-434f-41a4-aaae-6ae839368452.jpg",
       "precio": 0,
       "fecha": "2025-12-04T21:00:11.562Z"
+    },
+    {
+      "id": "c288",
+      "titulo": "Foto 3:08:02 p.m.",
+      "descripcion": "Enviado desde el celular",
+      "imagen": "file:///data/user/0/host.exp.exponent/cache/Camera/f511e90d-bbd7-43bc-b38f-5d66565e0748.jpg",
+      "precio": 0,
+      "fecha": "2025-12-04T21:08:02.390Z"
     }
   ]
 }
