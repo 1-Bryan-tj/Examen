@@ -9,7 +9,7 @@ export default function LoginScreen() {
   const [loading, setLoading] = useState(false);
 
   const handleLogin = () => {
-    // Validación visual
+  
     if (email.trim() === '' || password.trim() === '') {
       Alert.alert('Error', 'Ingresa usuario y contraseña');
       return;
@@ -17,10 +17,10 @@ export default function LoginScreen() {
 
     setLoading(true);
     
-    // SIMULAMOS CARGA (Truco para el examen)
+   
     setTimeout(() => {
       setLoading(false);
-      navigation.replace('Home'); // Te manda al Home directo
+      navigation.replace('Home'); 
     }, 1500);
   };
 

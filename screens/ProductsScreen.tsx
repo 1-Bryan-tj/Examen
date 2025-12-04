@@ -2,7 +2,7 @@ import React, { useState, useCallback } from "react";
 import { View, Text, FlatList, Image, TouchableOpacity, StyleSheet, ActivityIndicator } from "react-native";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 
-// --- TU API ---
+
 const API_URL = "http://192.168.100.9:3000/elementos"; // <--- PON TU IP AQUÍ
 
 export default function ProductsScreen() {

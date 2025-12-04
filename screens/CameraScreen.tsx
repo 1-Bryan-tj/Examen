@@ -3,9 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, Alert, But
 import { useNavigation } from "@react-navigation/native";
 import { CameraView, useCameraPermissions } from "expo-camera"; 
 
-// --- CONFIGURACIÓN DE TU API ---
-// ¡¡CAMBIA ESTOS NÚMEROS POR TU IP DE IPCONFIG!!
-const API_URL = "http://192.168.100.9:3000/elementos"; 
+const API_URL = "http://192.168.100.9:3000/elementos"; // <--- PON TU IP AQUÍ
 
 export default function CameraScreen() {
   const navigation = useNavigation<any>();

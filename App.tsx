@@ -4,11 +4,11 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { NavigationContainer, DefaultTheme } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
-// IMPORTAMOS TUS PANTALLAS
+
 import HomeScreen from "./screens/HomeScreen";
 import ProductsScreen from "./screens/ProductsScreen";
 import CameraScreen from "./screens/CameraScreen";
-import LoginScreen from "./screens/LoginScreen"; // <--- Asegúrate de tener este archivo
+import LoginScreen from "./screens/LoginScreen"; 
 
 const Stack = createNativeStackNavigator();
 
